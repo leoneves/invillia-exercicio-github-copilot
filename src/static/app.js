@@ -4,6 +4,21 @@ document.addEventListener("DOMContentLoaded", () => {
   const signupForm = document.getElementById("signup-form");
   const messageDiv = document.getElementById("message");
 
+  // Function to sanitize HTML to prevent XSS
+  function sanitizeHTML(str) {
+    const tempDiv = document.createElement("div");
+    tempDiv.textContent = str;
+    return tempDiv.innerHTML;
+  }
+
+  // Function to create a participant component
+  function createParticipantComponent(participant) {
+    const participantDiv = document.createElement("div");
+    participantDiv.className = "participant";
+    participantDiv.textContent = participant;
+    return participantDiv;
+  }
+
   // Function to fetch activities from API
   async function fetchActivities() {
     try {
@@ -20,13 +35,27 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const spotsLeft = details.max_participants - details.participants.length;
 
+        const participantsContainer = document.createElement("div");
+        participantsContainer.className = "participants-container";
+
+        if (details.participants.length > 0) {
+          details.participants.forEach((participant) => {
+            const participantComponent = createParticipantComponent(sanitizeHTML(participant));
+            participantsContainer.appendChild(participantComponent);
+          });
+        } else {
+          participantsContainer.textContent = "No participants yet";
+        }
+
         activityCard.innerHTML = `
           <h4>${name}</h4>
           <p>${details.description}</p>
           <p><strong>Schedule:</strong> ${details.schedule}</p>
           <p><strong>Availability:</strong> ${spotsLeft} spots left</p>
+          <p><strong>Participants:</strong></p>
         `;
 
+        activityCard.appendChild(participantsContainer);
         activitiesList.appendChild(activityCard);
 
         // Add option to select dropdown
